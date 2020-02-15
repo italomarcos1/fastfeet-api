@@ -22,6 +22,10 @@ class SessionController {
 
     const user = await User.findOne({ where: { email } });
 
+    if (!user) {
+      return res.status(401).json({ message: 'Usuário não encontrado.' });
+    }
+
     const isValid = await user.checkPassword(password);
 
     if (!isValid) {
