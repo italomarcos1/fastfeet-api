@@ -21,6 +21,7 @@ routes.post('/add', RecipientController.store);
 routes.post('/register', DeliverymenController.store);
 routes.get('/deliverymen', DeliverymenController.index);
 routes.post('/orders', OrderController.store);
+routes.get('/orders/:id', OrderController.index);
 
 routes.post('/files', upload.single('file'), FileController.store);
 
