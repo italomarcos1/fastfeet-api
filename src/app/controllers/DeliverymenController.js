@@ -25,12 +25,10 @@ class DeliverymanController {
         .status(400)
         .json({ message: 'Preencha os dados corretamente.' });
     }
-    console.log('aqui1');
 
     const itExists = await Deliverymen.findOne({
       where: { email: req.body.email },
     });
-    console.log('aqui2');
 
     if (itExists) {
       return res

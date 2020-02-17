@@ -15,7 +15,7 @@ FastFeet, uma API REST em Node.js (usando o framework Express).
 - [Yup](https://github.com/jquense/yup) - valida os dados recebidos pelo front-end, como um campo não preenchido, aplica confirmação de senha, entre outras funcionalidades.
 - [JWT](https://www.npmjs.com/package/jsonwebtoken) - autentica o administrador e bloqueia o acesso de outros usuários em rotas específicas usando um*middleware do **Express**.
 - [Bcryptjs](https://www.npmjs.com/package/bcrypt) - criptografia de senhas. O banco armazena apenas o hash, não a senha em si.
-- [Nodemailer](https://github.com/nodemailer/nodemailer) - serviço de envio de e-mails do node.
+- [Nodemailer](https://github.com/nodemailer/nodemailer) - serviço de envio de e-mails do **Node.js**.
 - [Handlebars](https://handlebarsjs.com/) - template engine para criar os templates de email, usando HTML.
 - [Bee-Queue](https://github.com/bee-queue/bee-queue) - guarda os serviços pesados em uma fila de processamento executada em segundo-plano (*background job*), tirando o trabalho do servidor.
 - [Date-fns](https://github.com/date-fns/date-fns) - lidando com datas e timezone no Javascript.
@@ -42,10 +42,10 @@ $ cd fastfeet
 $ yarn
 ```
 ```
-$ inicialize os bancos de dados (essa fase está em desenvolvimento, em breve trago instruções)	
+$ inicialize os bancos de dados (essa fase está em desenvolvimento, em breve trago instruções)
 ```
 ```
-$ yarn dev	
+$ yarn dev
 ```
 Após isso, recomendo utilizar o [Insomnia](https://insomnia.rest/download/) para enviar as requisições, visto que o front-end ainda não está pronto.
 

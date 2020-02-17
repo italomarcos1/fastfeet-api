@@ -23,6 +23,9 @@ routes.get('/deliverymen', DeliverymenController.index);
 routes.post('/orders', OrderController.store);
 routes.get('/orders/:id', OrderController.index);
 
+routes.put('/deliver/:id', OrderController.update);
+routes.delete('/deleteOrder/:id', OrderController.delete);
+
 routes.post('/files', upload.single('file'), FileController.store);
 
 routes.get('/success', (req, res) => {

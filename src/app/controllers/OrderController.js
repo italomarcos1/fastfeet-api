@@ -1,12 +1,9 @@
 import {
-  startOfHour,
   getHours,
   parseISO,
   setHours,
   isBefore,
   format,
-  subHours,
-  fromUnixTime,
   isAfter,
 } from 'date-fns'; // instale a @date-fns
 import pt from 'date-fns/locale/pt';
@@ -49,7 +46,31 @@ class OrderController {
   }
 
   async update(req, res) {
-    // end_date
+    // recebe pelo route param
+    const order = await Order.findByPk(req.params.id);
+
+    if (!order) {
+      return res.status(400).json({ message: 'Essa encomenda não existe.' });
+    }
+    const { end_date } = req.body;
+
+    // colocar a opção de cancelar a entrega.
+    // o front deve ter um botao cancel e um deliver
+
+    const { id, recipient_id, deliveryman_id, product } = await order.update({
+      end_date,
+    });
+
+    const { avatar } = await Deliverymen.findByPk(deliveryman_id, {
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['id', 'name', 'path', 'url'],
+        },
+      ],
+    });
+    return res.json({ id, product, recipient_id, deliveryman_id, avatar });
   }
 
   async index(req, res) {
@@ -75,7 +96,15 @@ class OrderController {
   }
 
   async delete(req, res) {
-    // delete
+    const order = await Order.findByPk(req.params.id);
+
+    if (!order) {
+      return res.status(400).json({ message: 'Essa encomenda não existe.' });
+    }
+
+    await order.destroy();
+
+    return res.json({ message: 'Encomenda deletada.' });
   }
 }
 
