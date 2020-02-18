@@ -11,15 +11,17 @@ import Order from '../models/Order';
 import File from '../models/File';
 import Deliverymen from '../models/Deliverymen';
 import Recipient from '../models/Recipient';
+import Queue from '../../lib/Queue';
+import NewOrderMail from '../jobs/NewOrderMail';
 
 class OrderController {
   async store(req, res) {
     const { start_date, recipient_id, deliveryman_id } = req.body;
 
-    const deliverymanExists = await Deliverymen.findByPk(deliveryman_id);
-    const recipientExists = await Recipient.findByPk(recipient_id);
+    const deliveryman = await Deliverymen.findByPk(deliveryman_id);
+    const recipient = await Recipient.findByPk(recipient_id);
 
-    if (!deliverymanExists || !recipientExists) {
+    if (!deliveryman || !recipient) {
       return res.status(400).json({
         message: 'Não há um entregador ou produto registrado com esses dados.',
       });
@@ -38,11 +40,11 @@ class OrderController {
       });
     }
 
-    const { id, canceled_at, product } = await Order.create(req.body);
+    const order = await Order.create(req.body);
 
-    // send mail
+    await Queue.add(NewOrderMail.key, { order, deliveryman, recipient });
 
-    return res.json({ id, canceled_at, product });
+    return res.json(order);
   }
 
   async update(req, res) {
