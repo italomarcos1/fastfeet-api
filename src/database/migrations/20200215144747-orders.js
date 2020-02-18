@@ -26,6 +26,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      delivered: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
       canceled_at: {
         type: Sequelize.DATE,
         allowNull: true,

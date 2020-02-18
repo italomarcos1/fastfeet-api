@@ -47,18 +47,20 @@ class OrderController {
 
   async update(req, res) {
     // recebe pelo route param
+    const count = 0; // salvo no banco e resetado ao fim do dia
     const order = await Order.findByPk(req.params.id);
 
-    if (!order) {
+    if (!order || count > 5) {
       return res.status(400).json({ message: 'Essa encomenda não existe.' });
     }
     const { end_date } = req.body;
 
     // colocar a opção de cancelar a entrega.
     // o front deve ter um botao cancel e um deliver
-
+    // incluir arquivo - passa um id qualquer. no front, habilita a camera do react native
     const { id, recipient_id, deliveryman_id, product } = await order.update({
       end_date,
+      delivered: true,
     });
 
     const { avatar } = await Deliverymen.findByPk(deliveryman_id, {
@@ -70,41 +72,35 @@ class OrderController {
         },
       ],
     });
+    console.log(count);
     return res.json({ id, product, recipient_id, deliveryman_id, avatar });
   }
 
   async index(req, res) {
     const orders = await Order.findAll({
-      where: { deliveryman_id: req.params.id },
-      include: [
-        {
-          model: Deliverymen,
-          as: 'deliveryman',
-          attributes: ['name', 'email'],
-          include: [
-            {
-              model: File,
-              as: 'avatar',
-              attributes: ['url', 'path'],
-            },
-          ],
-        },
-      ],
+      where: {
+        deliveryman_id: req.params.id,
+        canceled_at: null,
+        end_date: null,
+      },
     });
 
     return res.json(orders);
   }
 
   async delete(req, res) {
+    // cancelar significa SET NULL ou apagar do banco?
     const order = await Order.findByPk(req.params.id);
 
     if (!order) {
       return res.status(400).json({ message: 'Essa encomenda não existe.' });
     }
 
-    await order.destroy();
+    order.canceled_at = new Date();
 
-    return res.json({ message: 'Encomenda deletada.' });
+    await order.save();
+
+    return res.json({ message: 'Encomenda cancelada.' });
   }
 }
 

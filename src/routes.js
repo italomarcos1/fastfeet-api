@@ -18,11 +18,13 @@ routes.post('/login', SessionController.store);
 routes.use(authMiddleware);
 
 routes.post('/add', RecipientController.store);
+
 routes.post('/register', DeliverymenController.store);
 routes.get('/deliverymen', DeliverymenController.index);
+routes.get('/deliverymen/:id/deliveries', DeliverymenController.delivered);
+
 routes.post('/orders', OrderController.store);
 routes.get('/orders/:id', OrderController.index);
-
 routes.put('/deliver/:id', OrderController.update);
 routes.delete('/deleteOrder/:id', OrderController.delete);
 

@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import Deliverymen from '../models/Deliverymen';
+import Order from '../models/Order';
 import File from '../models/File';
 
 class DeliverymanController {
@@ -52,6 +53,33 @@ class DeliverymanController {
     });
 
     return res.json(employees);
+  }
+
+  async delivered(req, res) {
+    console.log(req.params.id);
+    const orders = await Order.findAll({
+      where: {
+        deliveryman_id: req.params.id,
+        canceled_at: null,
+        delivered: true,
+      },
+      include: [
+        {
+          model: Deliverymen,
+          as: 'deliveryman',
+          attributes: ['name', 'email'],
+          include: [
+            {
+              model: File,
+              as: 'avatar',
+              attributes: ['url', 'path'],
+            },
+          ],
+        },
+      ],
+    });
+
+    return res.json(orders);
   }
 }
 
