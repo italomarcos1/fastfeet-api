@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+
 import Deliverymen from '../models/Deliverymen';
 import Order from '../models/Order';
 import File from '../models/File';
@@ -37,6 +38,9 @@ class DeliverymanController {
         .json({ message: 'Já existe um entregador registrado com esse email' });
     }
 
+    const duty = new Date(); // fazer em uma linha ou optimizar
+    req.body.on_duty = duty.setHours(8, 0, 0);
+
     const { id, name, email, avatar_id } = await Deliverymen.create(req.body);
     return res.json({ id, name, email, avatar_id });
   }
@@ -55,8 +59,23 @@ class DeliverymanController {
     return res.json(employees);
   }
 
+  async update(req, res) {
+    const employee = await DeliverymanController.findByPk(req.params.id);
+
+    const { id, name, email } = await employee.update(req.body);
+
+    return res.json({ id, name, email });
+  }
+
+  async delete(req, res) {
+    const employee = await DeliverymanController.findByPk(req.params.id);
+
+    await employee.destroy();
+
+    return res.send('Entregador deletado da base de dados.');
+  }
+
   async delivered(req, res) {
-    console.log(req.params.id);
     const orders = await Order.findAll({
       where: {
         deliveryman_id: req.params.id,

@@ -6,6 +6,7 @@ class Deliverymen extends Model {
     super.init(
       {
         name: Sequelize.STRING,
+        retrieved: Sequelize.INTEGER,
         email: Sequelize.STRING,
         password: Sequelize.VIRTUAL,
         password_hash: Sequelize.STRING,

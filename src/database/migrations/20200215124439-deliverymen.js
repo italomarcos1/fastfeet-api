@@ -27,6 +27,15 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+      on_duty: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      retrieved: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,
