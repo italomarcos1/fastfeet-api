@@ -7,6 +7,7 @@ class Deliverymen extends Model {
       {
         name: Sequelize.STRING,
         retrieved: Sequelize.INTEGER,
+        on_duty: Sequelize.DATE,
         email: Sequelize.STRING,
         password: Sequelize.VIRTUAL,
         password_hash: Sequelize.STRING,

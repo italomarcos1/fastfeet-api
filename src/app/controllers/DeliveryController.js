@@ -32,19 +32,26 @@ class DeliveryController {
       return res.status(400).json({ message: 'Essa encomenda não existe.' });
     }
 
+    if (order.start_date !== null) {
+      return res
+        .status(400)
+        .json({ message: 'Esta encomenda já foi retirada.' });
+    }
+
     const minimal = addHours(deliveryman.on_duty, 24);
     if (isAfter(minimal, new Date())) {
       deliveryman.retrieved = 0;
     }
 
-    if (deliveryman.retrieved > 5) {
+    if (deliveryman.retrieved >= 5) {
       return res.status(400).json({
         message: 'O entregador atingiu o limite de encomendas diárias.',
       });
     }
 
-    const hourStart = getHours(parseISO(req.body.start_date));
+    const { start_date } = req.body;
 
+    const hourStart = getHours(parseISO(start_date));
     const minHour = getHours(setHours(new Date(), 8)); // coloca pro fuso do pais - horario
     const maxHour = getHours(setHours(new Date(), 18)); // coloca pro fuso do pais - horario
     // adicionar timezone
@@ -56,12 +63,9 @@ class DeliveryController {
       });
     }
 
-    deliveryman.retrieved++;
+    deliveryman.retrieved++; // so pode retirar quando eh null
 
-    await Promise.all(
-      order.update({ start_date: hourStart }),
-      deliveryman.save()
-    );
+    await Promise.all([order.update({ start_date }), deliveryman.save()]);
 
     const { avatar } = deliveryman;
     const { id, product, recipient_id } = order;
@@ -76,7 +80,7 @@ class DeliveryController {
   }
 
   async deliver(req, res) {
-    const order = await Order.findByPk(req.params.id);
+    const order = await Order.findByPk(req.params.order);
 
     if (!order) {
       return res.status(400).json({ message: 'Essa encomenda não existe.' });

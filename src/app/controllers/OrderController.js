@@ -22,7 +22,14 @@ class OrderController {
 
     const order = await Order.create(req.body);
 
-    await Queue.add(NewOrderMail.key, { order, deliveryman, recipient });
+    const dt = new Date();
+    const date = dt.toISOString();
+
+    await Queue.add(NewOrderMail.key, {
+      date,
+      deliveryman,
+      recipient,
+    });
 
     return res.json(order);
   }
@@ -45,6 +52,7 @@ class OrderController {
         deliveryman_id: req.params.id,
         canceled_at: null,
         end_date: null,
+        // delivered: false,
       },
     });
 

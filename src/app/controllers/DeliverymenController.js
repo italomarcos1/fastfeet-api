@@ -1,4 +1,11 @@
 import * as Yup from 'yup';
+import {
+  setHours,
+  setMinutes,
+  setSeconds,
+  setMilliseconds,
+  parseISO,
+} from 'date-fns';
 
 import Deliverymen from '../models/Deliverymen';
 import Order from '../models/Order';
@@ -38,11 +45,21 @@ class DeliverymanController {
         .json({ message: 'Já existe um entregador registrado com esse email' });
     }
 
-    const duty = new Date(); // fazer em uma linha ou optimizar
-    req.body.on_duty = duty.setHours(8, 0, 0);
+    const date = new Date(); // fazer em uma linha ou optimizar
+    const duty = date.toISOString(); // fazer em uma linha ou optimizar
+    console.log(date);
+    console.log(duty);
+    const on_duty = setHours(
+      setMinutes(setSeconds(setMilliseconds(parseISO(duty), 0), 0), 0),
+      8
+    );
+
+    console.log(req.body.on_duty);
+    req.body.on_duty = on_duty;
+    console.log(req.body.on_duty);
 
     const { id, name, email, avatar_id } = await Deliverymen.create(req.body);
-    return res.json({ id, name, email, avatar_id });
+    return res.json({ id, name, email, avatar_id, on_duty });
   }
 
   async index(req, res) {
@@ -63,7 +80,7 @@ class DeliverymanController {
     const employee = await DeliverymanController.findByPk(req.params.id);
 
     const { id, name, email } = await employee.update(req.body);
-
+    // fazer a validação pra alterar senha
     return res.json({ id, name, email });
   }
 

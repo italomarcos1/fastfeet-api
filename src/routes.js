@@ -4,6 +4,7 @@ import multer from 'multer';
 import SessionController from './app/controllers/SessionController';
 import RecipientController from './app/controllers/RecipientController';
 import DeliverymenController from './app/controllers/DeliverymenController';
+import DeliveryProblemController from './app/controllers/DeliveryProblemController';
 import DeliveryController from './app/controllers/DeliveryController';
 import FileController from './app/controllers/FileController';
 import OrderController from './app/controllers/OrderController';
@@ -28,6 +29,11 @@ routes.put('/delete/:id', DeliverymenController.delete);
 routes.get('/deliverymen/:id/deliveries', DeliverymenController.delivered);
 routes.put('/deliverymen/:id/retrieve/:order', DeliveryController.retrieve);
 routes.put('/deliverymen/:id/deliver/:order', DeliveryController.deliver);
+
+routes.post('/delivery/:delivery_id/problems', DeliveryProblemController.store);
+routes.get('/delivery/:delivery_id/problems', DeliveryProblemController.show);
+routes.get('/problems', DeliveryProblemController.index);
+routes.delete('/problem/:id/cancel_delivery', DeliveryProblemController.delete);
 
 routes.post('/orders', OrderController.store);
 routes.get('/orders/:id', OrderController.index);

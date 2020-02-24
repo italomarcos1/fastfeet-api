@@ -8,7 +8,7 @@ class NewOrderMail {
   }
 
   async handle({ data }) {
-    const { order, deliveryman, recipient } = data;
+    const { date, deliveryman, recipient } = data;
 
     console.log('A fila executou');
 
@@ -26,7 +26,7 @@ class NewOrderMail {
         state: recipient.state,
         cep: recipient.cep,
         date: format(
-          parseISO(order.start_date),
+          parseISO(date),
           "'dia' dd 'de' MMMM', às' H:mm'h'", // entre aspas simples não é manipulado e MMMM escreve o mês por extenso.
           { locale: pt }
         ),
