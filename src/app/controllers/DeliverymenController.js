@@ -47,16 +47,13 @@ class DeliverymanController {
 
     const date = new Date(); // fazer em uma linha ou optimizar
     const duty = date.toISOString(); // fazer em uma linha ou optimizar
-    console.log(date);
-    console.log(duty);
+
     const on_duty = setHours(
       setMinutes(setSeconds(setMilliseconds(parseISO(duty), 0), 0), 0),
       8
     );
 
-    console.log(req.body.on_duty);
     req.body.on_duty = on_duty;
-    console.log(req.body.on_duty);
 
     const { id, name, email, avatar_id } = await Deliverymen.create(req.body);
     return res.json({ id, name, email, avatar_id, on_duty });
@@ -77,11 +74,48 @@ class DeliverymanController {
   }
 
   async update(req, res) {
+    const schema = Yup.object().shape({
+      name: Yup.string(),
+      email: Yup.string().email(),
+      avatar_id: Yup.number(),
+      password: Yup.string()
+        .required()
+        .min(6),
+      newPassword: Yup.string().min(6),
+      confirmPassword: Yup.string()
+        .min(6)
+        .when('newPassword', (newPassword, field) =>
+          newPassword ? field.required().oneOf([Yup.ref('newPassword')]) : field
+        ),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res
+        .status(400)
+        .json({ message: 'Preencha os dados corretamente.' });
+    }
     const employee = await DeliverymanController.findByPk(req.params.id);
 
-    const { id, name, email } = await employee.update(req.body);
-    // fazer a validação pra alterar senha
-    return res.json({ id, name, email });
+    const itExists = await Deliverymen.findOne({
+      where: { email: req.body.email },
+    });
+
+    if (itExists) {
+      return res.status(400).json({
+        message: 'Este email já pertence a outro usuário.',
+      });
+    }
+
+    if (!(await employee.checkPassword(employee.password))) {
+      return res.status(401).json({
+        message:
+          'A senha informada está incorreta. As alterações não serão aplicadas',
+      });
+    }
+
+    const { id, name, email, avatar_id } = await employee.update(req.body);
+
+    return res.json({ id, name, email, avatar_id });
   }
 
   async delete(req, res) {
@@ -114,7 +148,11 @@ class DeliverymanController {
         },
       ],
     });
-
+    if (!orders) {
+      return res.status(400).json({
+        message: 'Esse entregador ainda não entregou nenhuma encomenda.',
+      });
+    }
     return res.json(orders);
   }
 }

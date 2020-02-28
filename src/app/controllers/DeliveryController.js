@@ -28,14 +28,16 @@ class DeliveryController {
       Order.findByPk(req.params.order),
     ]);
 
-    if (!order) {
-      return res.status(400).json({ message: 'Essa encomenda não existe.' });
+    if (!order || order.canceled_at !== null) {
+      return res
+        .status(400)
+        .json({ message: 'Essa encomenda não existe ou foi cancelada.' });
     }
 
     if (order.start_date !== null) {
-      return res
-        .status(400)
-        .json({ message: 'Esta encomenda já foi retirada.' });
+      return res.status(400).json({
+        message: 'Esta encomenda já foi retirada ou já foi entregue.',
+      });
     }
 
     const minimal = addHours(deliveryman.on_duty, 24);
@@ -49,7 +51,7 @@ class DeliveryController {
       });
     }
 
-    const { start_date } = req.body;
+    const { start_date } = req.body; // a data vem do front-end e será convertida
 
     const hourStart = getHours(parseISO(start_date));
     const minHour = getHours(setHours(new Date(), 8)); // coloca pro fuso do pais - horario
@@ -82,12 +84,20 @@ class DeliveryController {
   async deliver(req, res) {
     const order = await Order.findByPk(req.params.order);
 
-    if (!order) {
-      return res.status(400).json({ message: 'Essa encomenda não existe.' });
+    if (!order || order.canceled_at !== null) {
+      return res
+        .status(400)
+        .json({ message: 'Essa encomenda não existe ou foi cancelada.' });
     }
-    const { end_date } = req.body; // mexer no end
 
-    // incluir arquivo - passa um id qualquer. no front, habilita a camera do react native
+    if (order.start_date === null || order.delivered === true) {
+      return res.status(400).json({
+        message: 'Esta encomenda não foi retirada ou já foi entregue.',
+      });
+    }
+
+    const { end_date } = req.body; // desformatar a data no front-end, antes de enviar. o banco salva em UTC
+
     const {
       id,
       recipient_id,
@@ -96,6 +106,7 @@ class DeliveryController {
       start_date,
     } = await order.update({
       end_date,
+      signature_id: 1, // cabalistico. deve upar a imagem, retornar um valor, jogar no saga e passar pra cá
       delivered: true,
     });
 

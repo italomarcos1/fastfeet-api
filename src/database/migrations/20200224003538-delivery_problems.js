@@ -14,8 +14,16 @@ module.exports = {
         onDelete: 'SET NULL',
       },
       description: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false,
+      },
+      solution: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      solved_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
       },
       created_at: {
         type: Sequelize.DATE,

@@ -22,8 +22,17 @@ class DeliveryProblemController {
       ],
     });
 
-    if (!order) {
-      return res.status(400).json({ message: 'Essa encomenda não existe.' });
+    if (!order || order.canceled_at !== null) {
+      return res
+        .status(400)
+        .json({ message: 'Essa encomenda não existe ou foi cancelada.' });
+    }
+
+    if (order.start_date === null || order.delivered === true) {
+      return res.status(400).json({
+        message:
+          'A encomenda não está elegível para cadastrar problemas (não foi retirada ou já foi cancelada pelo comprador.',
+      });
     }
 
     const { id } = await DeliveryProblem.create({ delivery_id, description });
@@ -33,7 +42,23 @@ class DeliveryProblemController {
 
   async index(req, res) {
     const problems = await DeliveryProblem.findAll();
+    if (!problems) {
+      return res.status(400).json({
+        message: 'Nenhuma issue foi encontrada.',
+      });
+    }
+    return res.json(problems);
+  }
 
+  async indexUnsolved(req, res) {
+    const problems = await DeliveryProblem.findAll({
+      where: { solved_at: null },
+    });
+    if (!problems) {
+      return res.status(400).json({
+        message: 'Nenhuma issue aberta foi encontrada.',
+      });
+    }
     return res.json(problems);
   }
 
@@ -60,6 +85,61 @@ class DeliveryProblemController {
         return res.status(400).json({ message: 'Essa encomenda não existe.' });
       }
 
+      if (order.start_date === null || order.delivered === true) {
+        return res.status(400).json({
+          message:
+            'Não é possível cancelar uma encomenda não-retirada ou que já foi entregue.',
+        });
+      }
+
+      const [recipient, delivery_man] = await Promise.all([
+        Recipient.findOne({ where: { id: recipient_id } }),
+        Deliverymen.findOne({
+          where: { id: deliveryman_id },
+        }),
+      ]);
+
+      await Queue.add(CancellationMail.key, {
+        order,
+        recipient,
+        delivery_man,
+        description,
+      });
+      const { product } = order;
+
+      order.canceled_at = new Date();
+
+      await order.save();
+
+      return res.json({
+        message: `A encomenda referente ao produto ${product} foi cancelada.`,
+      });
+    } catch (err) {
+      return res.status(400).json({ message: 'Ocorreu um erro.' });
+    }
+  }
+
+  async closeIssue(req, res) {
+    try {
+      const issue = await DeliveryProblem.findByPk(req.params.id);
+
+      if (!issue || issue.solved_at !== null) {
+        return res.status(400).json({
+          message:
+            'A issue não foi encontrada. Provavelmente já foi resolvida.',
+        });
+      }
+
+      const { delivery_id, description } = issue;
+
+      const order = await Order.findOne({ where: { id: delivery_id } });
+
+      if (!order) {
+        return res.status(400).json({ message: 'Essa encomenda não existe.' });
+      }
+
+      const { recipient_id, deliveryman_id } = order;
+
       const [recipient, delivery_man] = await Promise.all([
         Recipient.findOne({ where: { id: recipient_id } }),
         Deliverymen.findOne({
@@ -74,9 +154,16 @@ class DeliveryProblemController {
         description,
       });
 
-      await order.destroy();
+      const { product } = order;
+
+      order.canceled_at = new Date();
+
+      await order.save();
+
+      return res.json({
+        message: `A encomenda referente ao produto ${product} foi cancelada.`,
+      }); // coloca encomenda como cancelada e issue como solved, e no description algo como 'encomenda cancelada'
       // pode colocar nome do produto, endereço, algo mais detalhado
-      return res.json({ message: 'Encomenda deletada' });
     } catch (err) {
       return res.status(400).json({ message: 'Ocorreu um erro.' });
     }

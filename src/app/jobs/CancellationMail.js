@@ -8,8 +8,6 @@ class NewOrderMail {
   async handle({ data }) {
     const { order, recipient, delivery_man, description } = data;
 
-    console.log('A fila executou');
-
     await Mail.sendMail({
       to: `${delivery_man.name} <${delivery_man.email}>`,
       subject: 'Uma de suas encomendas foi cancelada.',

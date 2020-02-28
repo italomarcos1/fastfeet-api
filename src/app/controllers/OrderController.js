@@ -18,7 +18,6 @@ class OrderController {
         message: 'Não há um entregador ou produto registrado com esses dados.',
       });
     }
-    // criar encomenda !== entregador retirar
 
     const order = await Order.create(req.body);
 
@@ -52,7 +51,6 @@ class OrderController {
         deliveryman_id: req.params.id,
         canceled_at: null,
         end_date: null,
-        // delivered: false,
       },
     });
 
@@ -64,6 +62,12 @@ class OrderController {
 
     if (!order) {
       return res.status(400).json({ message: 'Essa encomenda não existe.' });
+    }
+
+    if (order.canceled_at !== null || order.delivered === true) {
+      return res
+        .status(400)
+        .json({ message: 'Não é mais permitido cancelar essa encomenda.' });
     }
 
     order.canceled_at = new Date();

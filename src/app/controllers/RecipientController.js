@@ -20,11 +20,21 @@ class RecipientController {
           .json({ message: 'Preencha os dados corretamente.' });
       }
 
-      const data = req.body;
+      const { name, street, number, cep } = req.body;
 
-      const { id, name, email, street, number } = await Recipient.create(data);
+      const alreadyExists = await Recipient.findOne({
+        where: { name, street, number, cep },
+      });
 
-      return res.json({ id, name, email, street, number });
+      if (alreadyExists) {
+        return res
+          .status(400)
+          .json({ message: 'Esse destinatário já foi cadastrado.' });
+      }
+
+      const { id } = await Recipient.create(req.body);
+
+      return res.json({ id, name, street, number });
     } catch (err) {
       return res.status(400).json({ message: 'something went wrong' });
     }
